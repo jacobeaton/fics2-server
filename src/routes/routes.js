@@ -21,17 +21,6 @@ router.get("/", (req, res) => {
   res.status(200).send({ message: "It works!", error: "fixed" })
 })
 
-router.get("/entry", (req, res) => {
-  const entriesQuery = N1qlQuery.fromString(
-    'SELECT * FROM fics WHERE type="entry"'
-  )
-  bucket.query(entriesQuery, (error, result) => {
-    if (error) {
-      return res.status(400).send({ error })
-    }
-    return res.status(200).send({ result })
-  })
-})
 router.get("/doc", (req, res) => {
   const { where, groupBy, select, orderBy } = req.query
   const entriesQuery = N1qlQuery.fromString(
@@ -48,8 +37,10 @@ router.get("/doc", (req, res) => {
   })
 })
 // End GET paths //
-
 router.put("/doc/save/", async (req, res) => {
+  if (!req.body._id) {
+    return res.status(500).send({ error: "No _id specified in request body." })
+  }
   const document = req.body
   const response = await axios.put(
     `${config.sync_gateway}/${req.body._id}`,
@@ -59,6 +50,11 @@ router.put("/doc/save/", async (req, res) => {
 })
 
 router.put("/doc/update/", async (req, res) => {
+  if (!req.body._id || !req.body._rev) {
+    return res
+      .status(500)
+      .send("Request body is missing _id or _rev cannot update document.")
+  }
   const document = req.body
   const response = await axios.put(
     `${config.sync_gateway}/${req.body._id}?rev=${req.body._rev}`,
