@@ -2,7 +2,7 @@ import { Router } from "express"
 import bodyParser from "body-parser"
 import couchbase, { N1qlQuery } from "couchbase"
 
-import config from "../../.config.json"
+import config from "../../config.json"
 
 // Set up couchbase cluster and bucket //
 const cbConfig = config.couchbase
@@ -39,17 +39,17 @@ router.get("/query", (req, res) => {
   bucket.query(entriesQuery, (error, result) => {
     res.setHeader("Access-Control-Allow-Origin", "*")
     if (error) {
-      console.log("error: " + error)
+      console.log(`error: ${  error}`)
       return res.status(500).send({ couchbase: error })
     }
-    console.log("result: " + result)
+    console.log(`result: ${  result}`)
     return res.status(200).send({ couchbase: result })
   })
 })
 
 // End GET paths //
 
-//** Dont Use UPSERT, as it creates new documents */
+//* * Dont Use UPSERT, as it creates new documents */
 
 router.put("/upsert", async (req, res) => {
   if (req.body.testKey) {

@@ -2,7 +2,7 @@ import "babel-polyfill"
 import express from "express"
 import cors from "cors"
 
-import config from "../.config"
+import config from "../config"
 import router from "./routes/routes"
 import imports from "./routes/imports"
 

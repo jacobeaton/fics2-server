@@ -4,13 +4,21 @@ import couchbase, { N1qlQuery } from "couchbase"
 import fileUpload from "express-fileupload"
 import csv from "csvtojson"
 
-import config from "../../.config.json"
+import config from "../../config.json"
 
 // Set up couchbase cluster and bucket //
 const cbConfig = config.couchbase
 const cluster = new couchbase.Cluster(cbConfig.cluster)
 cluster.authenticate(cbConfig.username, cbConfig.password)
 const bucket = cluster.openBucket(cbConfig.bucket)
+
+const asyncBucketQuery = async (query, _bucket = bucket) =>
+  new Promise((resolve, reject) => {
+    _bucket.query(query, (err, result) => {
+      if (err) reject(err)
+      else resolve(result)
+    })
+  })
 
 // create express.Router() and use bodyParser middleware //
 const router = Router()
@@ -27,25 +35,26 @@ const cleanStr = str =>
 
 const importParts = async filePath => {
   const jsonArray = await csv().fromFile(filePath)
-  jsonArray.map(item => {
-    const { cost, systemQty, description, ...rest } = item
-    const uploadItem = {
-      cost: parseFloat(cost),
-      systemQty: parseFloat(systemQty),
-      description: cleanStr(description),
-      ...rest
-    }
-    const statement = `UPSERT INTO fics (KEY, VALUE) VALUES("${
-      uploadItem.partNumber
-    }", ${JSON.stringify(uploadItem)})`
-    const query = N1qlQuery.fromString(statement)
-    bucket.query(query, error => {
-      if (error) {
-        throw error
+  const resultArray = await Promise.all(
+    jsonArray.map(async item => {
+      const { cost, systemQty, description } = item
+      const uploadItem = {
+        cost: parseFloat(cost),
+        systemQty: parseFloat(systemQty),
+        description: cleanStr(description),
+        partNumber: item.partNumber,
+        type: "part",
+        void: false
       }
+      const results = await bucket.upsert(
+        uploadItem.partNumber,
+        uploadItem,
+        (error, result) => (error ? { error } : { result })
+      )
+      return { partNumber: item.partNumber, results }
     })
-  })
-  return { success: true }
+  )
+  return resultArray
 }
 
 router.post("/parts", (req, res) => {
@@ -65,6 +74,7 @@ router.post("/parts", (req, res) => {
       res.status(200).send({ result })
     })
     .catch(error => {
+      console.log(error)
       res.status(500).send({ error })
     })
 })
