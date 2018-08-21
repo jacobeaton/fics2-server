@@ -55,6 +55,7 @@ const asyncBucketQuery = async (query, _bucket = bucket) =>
   })
 
 router.get("/variance", async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*")
   const partsQuery = N1qlQuery.fromString(
     `SELECT partNumber, description, systemQty, cost FROM fics WHERE type="part"`
   )
@@ -87,6 +88,7 @@ router.get("/variance", async (req, res) => {
 })
 
 router.get("/variance/:limit", async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*")
   const { limit } = req.params
   const partsQuery = N1qlQuery.fromString(
     `SELECT partNumber, description, systemQty, cost FROM fics WHERE type="part"`
