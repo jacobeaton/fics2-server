@@ -4,7 +4,6 @@ import couchbase, { N1qlQuery } from "couchbase"
 import fileUpload from "express-fileupload"
 import csv from "csvtojson"
 import uuid from "uuid4"
-import moment from "moment"
 
 import config from "../../config.json"
 
