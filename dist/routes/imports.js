@@ -30,8 +30,6 @@ var _config = require("../../config.json");
 
 var _config2 = _interopRequireDefault(_config);
 
-var _assert = require("assert");
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
@@ -180,24 +178,30 @@ var importParts = function () {
                     switch (_context4.prev = _context4.next) {
                       case 0:
                         cost = item.cost, systemQty = item.systemQty, description = item.description;
+
+                        console.log(item);
                         uploadItem = {
                           cost: parseFloat(cost),
                           systemQty: parseFloat(systemQty),
                           description: cleanStr(description),
                           partNumber: item.partNumber,
                           type: "part",
-                          void: false
+                          void: false,
+                          sessionId: item.sessionId,
+                          countList: item.countList,
+                          countListLine: item.countListLine,
+                          unit: item.unit
                         };
-                        _context4.next = 4;
+                        _context4.next = 5;
                         return bucket.upsert(uploadItem.partNumber, uploadItem, function (error, result) {
                           return error ? { error: error } : { result: result };
                         });
 
-                      case 4:
+                      case 5:
                         results = _context4.sent;
                         return _context4.abrupt("return", { partNumber: item.partNumber, results: results });
 
-                      case 6:
+                      case 7:
                       case "end":
                         return _context4.stop();
                     }

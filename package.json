@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "app-root-path": "^2.1.0",
     "axios": "^0.18.0",
     "babel-polyfill": "^6.26.0",
     "body-parser": "^1.18.3",
@@ -20,7 +21,9 @@
     "csvtojson": "^2.0.8",
     "express": "^4.16.3",
     "express-fileupload": "^0.4.0",
+    "json2csv": "^4.2.1",
     "json2xls": "^0.1.2",
+    "lodash.flatten": "^4.4.0",
     "moment": "^2.22.2",
     "morgan": "^1.9.0",
     "uuid": "^3.3.0",

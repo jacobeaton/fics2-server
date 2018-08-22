@@ -18,6 +18,20 @@ var _json2xls = require("json2xls");
 
 var _json2xls2 = _interopRequireDefault(_json2xls);
 
+var _fs = require("fs");
+
+var _fs2 = _interopRequireDefault(_fs);
+
+var _lodash = require("lodash.flatten");
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _json2csv = require("json2csv");
+
+var _appRootPath = require("app-root-path");
+
+var _appRootPath2 = _interopRequireDefault(_appRootPath);
+
 var _config = require("../../config.json");
 
 var _config2 = _interopRequireDefault(_config);
@@ -142,6 +156,95 @@ router.get("/variance", function () {
 
   return function (_x3, _x4) {
     return _ref2.apply(this, arguments);
+  };
+}());
+
+router.get("/x3file", function () {
+  var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(req, res) {
+    var partsQuery, entriesQuery, parts, entries, partsWithEntry;
+    return regeneratorRuntime.wrap(function _callee5$(_context5) {
+      while (1) {
+        switch (_context5.prev = _context5.next) {
+          case 0:
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            partsQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, description, systemQty, cost, sessionId, countList, countListLine, unit FROM fics WHERE type=\"part\" ORDER BY partNumber");
+            entriesQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, sum(qty) as counted FROM fics where type=\"entry\" and void=false GROUP BY partNumber");
+            _context5.next = 5;
+            return asyncBucketQuery(partsQuery);
+
+          case 5:
+            parts = _context5.sent;
+            _context5.next = 8;
+            return asyncBucketQuery(entriesQuery);
+
+          case 8:
+            entries = _context5.sent;
+            _context5.next = 11;
+            return Promise.all(parts.map(function () {
+              var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(part) {
+                var filteredEntries, counted, result;
+                return regeneratorRuntime.wrap(function _callee4$(_context4) {
+                  while (1) {
+                    switch (_context4.prev = _context4.next) {
+                      case 0:
+                        _context4.next = 2;
+                        return Promise.all(entries.filter(function (entry) {
+                          return entry.partNumber === part.partNumber;
+                        }));
+
+                      case 2:
+                        filteredEntries = _context4.sent;
+                        counted = filteredEntries.length ? filteredEntries[0].counted : 0;
+                        result = {
+                          s: "S",
+                          sessionId: "" + part.sessionId,
+                          countList: "" + part.countList,
+                          countListLine: "" + part.countListLine,
+                          site: "015",
+                          counted: counted,
+                          counted2: counted,
+                          isZero: counted === 0 ? 2 : 1,
+                          partNumber: "" + part.partNumber,
+                          blank: "",
+                          blank2: "",
+                          location: "01",
+                          class: "A",
+                          unit: "" + part.unit,
+                          always1: "1,,,,"
+                        };
+                        return _context4.abrupt("return", result);
+
+                      case 6:
+                      case "end":
+                        return _context4.stop();
+                    }
+                  }
+                }, _callee4, undefined);
+              }));
+
+              return function (_x8) {
+                return _ref5.apply(this, arguments);
+              };
+            }()));
+
+          case 11:
+            partsWithEntry = _context5.sent;
+
+            _fs2.default.writeFile("temp/x3import.csv", (0, _json2csv.parse)((0, _lodash2.default)(partsWithEntry), { header: false }), function (err) {
+              if (err) return res.status(500).send(err);
+              return res.status(200).download(_appRootPath2.default + "/temp/x3import.csv", "x3import.csv");
+            });
+
+          case 13:
+          case "end":
+            return _context5.stop();
+        }
+      }
+    }, _callee5, undefined);
+  }));
+
+  return function (_x6, _x7) {
+    return _ref4.apply(this, arguments);
   };
 }());
 exports.default = router;

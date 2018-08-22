@@ -6,7 +6,6 @@ import csv from "csvtojson"
 import uuid from "uuid4"
 
 import config from "../../config.json"
-import { rejects } from "assert"
 
 // Set up couchbase cluster and bucket //
 const cbConfig = config.couchbase
@@ -81,13 +80,18 @@ const importParts = async filePath => {
   const resultArray = await Promise.all(
     jsonArray.map(async item => {
       const { cost, systemQty, description } = item
+      console.log(item)
       const uploadItem = {
         cost: parseFloat(cost),
         systemQty: parseFloat(systemQty),
         description: cleanStr(description),
         partNumber: item.partNumber,
         type: "part",
-        void: false
+        void: false,
+        sessionId: item.sessionId,
+        countList: item.countList,
+        countListLine: item.countListLine,
+        unit: item.unit
       }
       const results = await bucket.upsert(
         uploadItem.partNumber,
