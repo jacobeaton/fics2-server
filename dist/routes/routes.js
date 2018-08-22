@@ -99,19 +99,20 @@ router.get("/variance", function () {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
+            res.setHeader("Access-Control-Allow-Origin", "*");
             partsQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, description, systemQty, cost FROM fics WHERE type=\"part\"");
             entriesQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, sum(qty) as counted FROM fics where type=\"entry\" and void=false GROUP BY partNumber");
-            _context3.next = 4;
+            _context3.next = 5;
             return asyncBucketQuery(partsQuery);
 
-          case 4:
+          case 5:
             parts = _context3.sent;
-            _context3.next = 7;
+            _context3.next = 8;
             return asyncBucketQuery(entriesQuery);
 
-          case 7:
+          case 8:
             entries = _context3.sent;
-            _context3.next = 10;
+            _context3.next = 11;
             return Promise.all(parts.map(function () {
               var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(part) {
                 var filteredEntries, counted, variance, extVariance, result;
@@ -153,12 +154,12 @@ router.get("/variance", function () {
               };
             }()));
 
-          case 10:
+          case 11:
             partsWithEntry = _context3.sent;
 
             res.status(200).send({ result: partsWithEntry });
 
-          case 12:
+          case 13:
           case "end":
             return _context3.stop();
         }
@@ -171,41 +172,89 @@ router.get("/variance", function () {
   };
 }());
 
-router.get("/variance/:limit", function () {
-  var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(req, res) {
-    var limit, partsQuery, entriesQuery, parts, entries, partsWithEntry, sortedPartsWithEntry;
-    return regeneratorRuntime.wrap(function _callee5$(_context5) {
+router.get("/delete/:type/:password", function () {
+  var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(req, res) {
+    var _req$params, type, password, deleteQuery, result;
+
+    return regeneratorRuntime.wrap(function _callee4$(_context4) {
       while (1) {
-        switch (_context5.prev = _context5.next) {
+        switch (_context4.prev = _context4.next) {
           case 0:
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            _req$params = req.params, type = _req$params.type, password = _req$params.password;
+
+            if (!(type && password === _config2.default.password)) {
+              _context4.next = 14;
+              break;
+            }
+
+            deleteQuery = _couchbase.N1qlQuery.fromString("DELETE FROM fics WHERE type=\"" + type + "\"");
+            _context4.prev = 4;
+            _context4.next = 7;
+            return asyncBucketQuery(deleteQuery);
+
+          case 7:
+            result = _context4.sent;
+
+            res.status(200).send(result);
+            _context4.next = 14;
+            break;
+
+          case 11:
+            _context4.prev = 11;
+            _context4.t0 = _context4["catch"](4);
+
+            res.status(500).send(_context4.t0);
+
+          case 14:
+          case "end":
+            return _context4.stop();
+        }
+      }
+    }, _callee4, undefined, [[4, 11]]);
+  }));
+
+  return function (_x6, _x7) {
+    return _ref4.apply(this, arguments);
+  };
+}());
+
+router.get("/variance/:limit", function () {
+  var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(req, res) {
+    var limit, partsQuery, entriesQuery, parts, entries, partsWithEntry, sortedPartsWithEntry;
+    return regeneratorRuntime.wrap(function _callee6$(_context6) {
+      while (1) {
+        switch (_context6.prev = _context6.next) {
+          case 0:
+            res.setHeader("Access-Control-Allow-Origin", "*");
             limit = req.params.limit;
             partsQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, description, systemQty, cost FROM fics WHERE type=\"part\"");
             entriesQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, sum(qty) as counted FROM fics where type=\"entry\" and void=false GROUP BY partNumber");
-            _context5.next = 5;
+            _context6.next = 6;
             return asyncBucketQuery(partsQuery);
 
-          case 5:
-            parts = _context5.sent;
-            _context5.next = 8;
+          case 6:
+            parts = _context6.sent;
+            _context6.next = 9;
             return asyncBucketQuery(entriesQuery);
 
-          case 8:
-            entries = _context5.sent;
-            _context5.next = 11;
+          case 9:
+            entries = _context6.sent;
+            _context6.next = 12;
             return Promise.all(parts.map(function () {
-              var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(part) {
+              var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(part) {
                 var filteredEntries, counted, variance, extVariance, result;
-                return regeneratorRuntime.wrap(function _callee4$(_context4) {
+                return regeneratorRuntime.wrap(function _callee5$(_context5) {
                   while (1) {
-                    switch (_context4.prev = _context4.next) {
+                    switch (_context5.prev = _context5.next) {
                       case 0:
-                        _context4.next = 2;
+                        _context5.next = 2;
                         return Promise.all(entries.filter(function (entry) {
                           return entry.partNumber === part.partNumber;
                         }));
 
                       case 2:
-                        filteredEntries = _context4.sent;
+                        filteredEntries = _context5.sent;
                         counted = filteredEntries.length ? filteredEntries[0].counted : 0;
                         variance = counted - part.systemQty;
                         extVariance = variance * part.cost;
@@ -218,39 +267,39 @@ router.get("/variance/:limit", function () {
                           Cost: part.cost,
                           ExtendedVariance: extVariance
                         };
-                        return _context4.abrupt("return", result);
+                        return _context5.abrupt("return", result);
 
                       case 8:
                       case "end":
-                        return _context4.stop();
+                        return _context5.stop();
                     }
                   }
-                }, _callee4, undefined);
+                }, _callee5, undefined);
               }));
 
-              return function (_x8) {
-                return _ref5.apply(this, arguments);
+              return function (_x10) {
+                return _ref6.apply(this, arguments);
               };
             }()));
 
-          case 11:
-            partsWithEntry = _context5.sent;
+          case 12:
+            partsWithEntry = _context6.sent;
             sortedPartsWithEntry = partsWithEntry.sort(function (a, b) {
               return Math.abs(b.ExtendedVariance) - Math.abs(a.ExtendedVariance);
             });
 
-            res.status(200).send({ result: sortedPartsWithEntry.slice(0, limit - 1) });
+            res.status(200).send({ result: sortedPartsWithEntry.slice(0, limit) });
 
-          case 14:
+          case 15:
           case "end":
-            return _context5.stop();
+            return _context6.stop();
         }
       }
-    }, _callee5, undefined);
+    }, _callee6, undefined);
   }));
 
-  return function (_x6, _x7) {
-    return _ref4.apply(this, arguments);
+  return function (_x8, _x9) {
+    return _ref5.apply(this, arguments);
   };
 }());
 // End GET paths //
@@ -258,22 +307,22 @@ router.get("/variance/:limit", function () {
 //* * Dont Use UPSERT, as it creates new documents */
 
 router.put("/upsert", function () {
-  var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(req, res) {
+  var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(req, res) {
     var document;
-    return regeneratorRuntime.wrap(function _callee6$(_context6) {
+    return regeneratorRuntime.wrap(function _callee7$(_context7) {
       while (1) {
-        switch (_context6.prev = _context6.next) {
+        switch (_context7.prev = _context7.next) {
           case 0:
             if (req.body.testKey) {
               console.log(req.body.testKey);
             }
 
             if (req.body._id) {
-              _context6.next = 3;
+              _context7.next = 3;
               break;
             }
 
-            return _context6.abrupt("return", res.status(500).send({ error: "No _id specified in request body." }));
+            return _context7.abrupt("return", res.status(500).send({ error: "No _id specified in request body." }));
 
           case 3:
             document = req.body;
@@ -286,18 +335,18 @@ router.put("/upsert", function () {
               console.log(response);
             });
 
-            return _context6.abrupt("return", res.status(200).send(res.data));
+            return _context7.abrupt("return", res.status(200).send(res.data));
 
           case 6:
           case "end":
-            return _context6.stop();
+            return _context7.stop();
         }
       }
-    }, _callee6, undefined);
+    }, _callee7, undefined);
   }));
 
-  return function (_x9, _x10) {
-    return _ref6.apply(this, arguments);
+  return function (_x11, _x12) {
+    return _ref7.apply(this, arguments);
   };
 }());
 

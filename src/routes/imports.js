@@ -13,27 +13,29 @@ const cluster = new couchbase.Cluster(cbConfig.cluster)
 cluster.authenticate(cbConfig.username, cbConfig.password)
 const bucket = cluster.openBucket(cbConfig.bucket)
 
-const newEntryId = (deviceId, partNumber) => {
+const asyncBucketQuery = async (query, _bucket = bucket) =>
+  new Promise((resolve, reject) => {
+    _bucket.query(query, (err, result) => {
+      if (err) reject(err)
+      else resolve(result)
+    })
+  })
+
+const newEntryId = async (deviceId, partNumber) => {
   const UUID = uuid()
-  let entryId = `${deviceId}-${partNumber}-${UUID.substr(UUID.length - 4, 4)}`
+  const entryId = `${deviceId}-${partNumber}-${UUID.substr(UUID.length - 4, 4)}`
   const query = N1qlQuery.fromString(
     `SELECT * FROM fics WHERE entryId="${entryId}"`
   )
-  entryId = bucket.quey(query, (error, result) => {
-    if (error) {
-      console.log(error)
-      return error
-    }
-    if (result.length > 0) {
-      return newEntryId(deviceId, partNumber)
-    }
-    return entryId
-  })
+  const result = await asyncBucketQuery(query)
+  if (result.length > 0) {
+    newEntryId(deviceId, partNumber)
+  }
   return entryId
 }
 
 const dev = {
-  deviceId: 9001,
+  deviceId: "9001",
   firstName: "Michael",
   lastName: "Powell",
   isActive: true,
@@ -92,11 +94,12 @@ const importEntries = async (filePath, device, session) => {
   const jsonArray = await csv().fromFile(filePath)
   const resultArray = await Promise.all(
     jsonArray.map(async item => {
+      const NOW = new Date().toISOString()
       const { partNumber, qty, locationID } = item
       const uploadItem = {
-        entryId: newEntryId(device.id, partNumber),
-        createdAt: Date().toISOString(),
-        updatedAt: Date().toISOString(),
+        entryId: await newEntryId(device.deviceId, partNumber),
+        createdAt: NOW,
+        updatedAt: NOW,
         partNumber,
         qty: parseFloat(qty),
         locationID,
@@ -133,7 +136,6 @@ router.post("/parts", (req, res) => {
       res.status(200).send({ result })
     })
     .catch(error => {
-      console.log(error)
       res.status(500).send({ error })
     })
 })
@@ -148,7 +150,7 @@ router.post("/entry", async (req, res) => {
     if (error) {
       throw error
     }
-    const results = importEntries(`./temp/${upload.name}`, dev, sess)
+    const results = await importEntries(`./temp/${upload.name}`, dev, sess)
     res.status(200).send({ results })
   } catch (error) {
     res.status(500).send({ error })

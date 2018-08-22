@@ -3,13 +3,15 @@ import express from "express"
 import cors from "cors"
 
 import config from "../config"
-import router from "./routes/routes"
-import imports from "./routes/imports"
+import Router from "./routes/routes"
+import Imports from "./routes/imports"
+import Exports from "./routes/exports"
 
 const app = express()
 
-app.use("/api", router)
-app.use("/imports", imports)
+app.use("/api", Router)
+app.use("/imports", Imports)
+app.use("/exports", Exports)
 
 app.use(cors())
 app.listen(config.express.port, () => {

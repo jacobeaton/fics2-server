@@ -87,6 +87,22 @@ router.get("/variance", async (req, res) => {
   res.status(200).send({ result: partsWithEntry })
 })
 
+router.get("/delete/:type/:password", async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*")
+  const { type, password } = req.params
+  if (type && password === config.password) {
+    const deleteQuery = N1qlQuery.fromString(
+      `DELETE FROM fics WHERE type="${type}"`
+    )
+    try {
+      const result = await asyncBucketQuery(deleteQuery)
+      res.status(200).send(result)
+    } catch (error) {
+      res.status(500).send(error)
+    }
+  }
+})
+
 router.get("/variance/:limit", async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*")
   const { limit } = req.params
