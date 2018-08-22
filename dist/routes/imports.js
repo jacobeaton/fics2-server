@@ -30,6 +30,8 @@ var _config = require("../../config.json");
 
 var _config2 = _interopRequireDefault(_config);
 
+var _assert = require("assert");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
@@ -40,8 +42,8 @@ var cluster = new _couchbase2.default.Cluster(cbConfig.cluster);
 cluster.authenticate(cbConfig.username, cbConfig.password);
 var bucket = cluster.openBucket(cbConfig.bucket);
 
-var asyncBucketQuery = function () {
-  var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(query) {
+var asyncBucketGet = function () {
+  var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(id) {
     var _bucket = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : bucket;
 
     return regeneratorRuntime.wrap(function _callee$(_context) {
@@ -49,8 +51,8 @@ var asyncBucketQuery = function () {
         switch (_context.prev = _context.next) {
           case 0:
             return _context.abrupt("return", new Promise(function (resolve, reject) {
-              _bucket.query(query, function (err, result) {
-                if (err) reject(err);else resolve(result);
+              _bucket.get(id, function (err, result) {
+                if (err.code === 13) resolve(false);else if (err) reject(err);else resolve(result);
               });
             }));
 
@@ -62,33 +64,28 @@ var asyncBucketQuery = function () {
     }, _callee, undefined);
   }));
 
-  return function asyncBucketQuery(_x2) {
+  return function asyncBucketGet(_x2) {
     return _ref.apply(this, arguments);
   };
 }();
 
-var newEntryId = function () {
-  var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(deviceId, partNumber) {
-    var UUID, entryId, query, result;
+var asyncBucketUpsert = function () {
+  var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(id, doc) {
+    var _bucket = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : bucket;
+
     return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
-            UUID = (0, _uuid2.default)();
-            entryId = deviceId + "-" + partNumber + "-" + UUID.substr(UUID.length - 4, 4);
-            query = _couchbase.N1qlQuery.fromString("SELECT * FROM fics WHERE entryId=\"" + entryId + "\"");
-            _context2.next = 5;
-            return asyncBucketQuery(query);
+            new Promise(function (resolve, reject) {
+              _bucket.upsert(id, doc, function (err, result) {
+                if (err) reject(err);else {
+                  resolve(result);
+                }
+              });
+            });
 
-          case 5:
-            result = _context2.sent;
-
-            if (result.length > 0) {
-              newEntryId(deviceId, partNumber);
-            }
-            return _context2.abrupt("return", entryId);
-
-          case 8:
+          case 1:
           case "end":
             return _context2.stop();
         }
@@ -96,8 +93,41 @@ var newEntryId = function () {
     }, _callee2, undefined);
   }));
 
-  return function newEntryId(_x3, _x4) {
+  return function asyncBucketUpsert(_x4, _x5) {
     return _ref2.apply(this, arguments);
+  };
+}();
+
+var newEntryId = function () {
+  var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(deviceId, partNumber) {
+    var UUID, entryId, result;
+    return regeneratorRuntime.wrap(function _callee3$(_context3) {
+      while (1) {
+        switch (_context3.prev = _context3.next) {
+          case 0:
+            UUID = (0, _uuid2.default)();
+            entryId = deviceId + "-" + partNumber + "-" + UUID.substr(UUID.length - 4, 4);
+            _context3.next = 4;
+            return asyncBucketGet(entryId);
+
+          case 4:
+            result = _context3.sent;
+
+            if (result) {
+              newEntryId(deviceId, partNumber);
+            }
+            return _context3.abrupt("return", entryId);
+
+          case 7:
+          case "end":
+            return _context3.stop();
+        }
+      }
+    }, _callee3, undefined);
+  }));
+
+  return function newEntryId(_x6, _x7) {
+    return _ref3.apply(this, arguments);
   };
 }();
 
@@ -130,24 +160,24 @@ var cleanStr = function cleanStr(str) {
 };
 
 var importParts = function () {
-  var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(filePath) {
+  var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(filePath) {
     var jsonArray, resultArray;
-    return regeneratorRuntime.wrap(function _callee4$(_context4) {
+    return regeneratorRuntime.wrap(function _callee5$(_context5) {
       while (1) {
-        switch (_context4.prev = _context4.next) {
+        switch (_context5.prev = _context5.next) {
           case 0:
-            _context4.next = 2;
+            _context5.next = 2;
             return (0, _csvtojson2.default)().fromFile(filePath);
 
           case 2:
-            jsonArray = _context4.sent;
-            _context4.next = 5;
+            jsonArray = _context5.sent;
+            _context5.next = 5;
             return Promise.all(jsonArray.map(function () {
-              var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(item) {
+              var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(item) {
                 var cost, systemQty, description, uploadItem, results;
-                return regeneratorRuntime.wrap(function _callee3$(_context3) {
+                return regeneratorRuntime.wrap(function _callee4$(_context4) {
                   while (1) {
-                    switch (_context3.prev = _context3.next) {
+                    switch (_context4.prev = _context4.next) {
                       case 0:
                         cost = item.cost, systemQty = item.systemQty, description = item.description;
                         uploadItem = {
@@ -158,127 +188,135 @@ var importParts = function () {
                           type: "part",
                           void: false
                         };
-                        _context3.next = 4;
+                        _context4.next = 4;
                         return bucket.upsert(uploadItem.partNumber, uploadItem, function (error, result) {
                           return error ? { error: error } : { result: result };
                         });
 
                       case 4:
-                        results = _context3.sent;
-                        return _context3.abrupt("return", { partNumber: item.partNumber, results: results });
+                        results = _context4.sent;
+                        return _context4.abrupt("return", { partNumber: item.partNumber, results: results });
 
                       case 6:
                       case "end":
-                        return _context3.stop();
+                        return _context4.stop();
                     }
                   }
-                }, _callee3, undefined);
+                }, _callee4, undefined);
               }));
 
-              return function (_x6) {
-                return _ref4.apply(this, arguments);
+              return function (_x9) {
+                return _ref5.apply(this, arguments);
               };
             }()));
 
           case 5:
-            resultArray = _context4.sent;
-            return _context4.abrupt("return", resultArray);
+            resultArray = _context5.sent;
+            return _context5.abrupt("return", resultArray);
 
           case 7:
           case "end":
-            return _context4.stop();
+            return _context5.stop();
         }
       }
-    }, _callee4, undefined);
+    }, _callee5, undefined);
   }));
 
-  return function importParts(_x5) {
-    return _ref3.apply(this, arguments);
+  return function importParts(_x8) {
+    return _ref4.apply(this, arguments);
   };
 }();
 
 var importEntries = function () {
-  var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(filePath, device, session) {
+  var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(filePath, device, session) {
     var jsonArray, resultArray;
-    return regeneratorRuntime.wrap(function _callee6$(_context6) {
+    return regeneratorRuntime.wrap(function _callee7$(_context7) {
       while (1) {
-        switch (_context6.prev = _context6.next) {
+        switch (_context7.prev = _context7.next) {
           case 0:
-            _context6.next = 2;
+            _context7.prev = 0;
+            _context7.next = 3;
             return (0, _csvtojson2.default)().fromFile(filePath);
 
-          case 2:
-            jsonArray = _context6.sent;
-            _context6.next = 5;
+          case 3:
+            jsonArray = _context7.sent;
+            _context7.next = 6;
             return Promise.all(jsonArray.map(function () {
-              var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(item) {
+              var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(item) {
                 var NOW, partNumber, qty, locationID, uploadItem, results;
-                return regeneratorRuntime.wrap(function _callee5$(_context5) {
+                return regeneratorRuntime.wrap(function _callee6$(_context6) {
                   while (1) {
-                    switch (_context5.prev = _context5.next) {
+                    switch (_context6.prev = _context6.next) {
                       case 0:
                         NOW = new Date().toISOString();
                         partNumber = item.partNumber, qty = item.qty, locationID = item.locationID;
-                        _context5.next = 4;
+                        _context6.next = 4;
                         return newEntryId(device.deviceId, partNumber);
 
                       case 4:
-                        _context5.t0 = _context5.sent;
-                        _context5.t1 = NOW;
-                        _context5.t2 = NOW;
-                        _context5.t3 = partNumber;
-                        _context5.t4 = parseFloat(qty);
-                        _context5.t5 = locationID;
-                        _context5.t6 = device;
-                        _context5.t7 = session;
+                        _context6.t0 = _context6.sent;
+                        _context6.t1 = NOW;
+                        _context6.t2 = NOW;
+                        _context6.t3 = partNumber;
+                        _context6.t4 = parseFloat(qty);
+                        _context6.t5 = locationID;
+                        _context6.t6 = device;
+                        _context6.t7 = session;
                         uploadItem = {
-                          entryId: _context5.t0,
-                          createdAt: _context5.t1,
-                          updatedAt: _context5.t2,
-                          partNumber: _context5.t3,
-                          qty: _context5.t4,
-                          locationID: _context5.t5,
+                          entryId: _context6.t0,
+                          createdAt: _context6.t1,
+                          updatedAt: _context6.t2,
+                          partNumber: _context6.t3,
+                          qty: _context6.t4,
+                          locationID: _context6.t5,
                           type: "entry",
                           void: false,
-                          device: _context5.t6,
-                          session: _context5.t7
+                          device: _context6.t6,
+                          session: _context6.t7
                         };
-                        _context5.next = 15;
-                        return bucket.upsert(uploadItem.entryId, uploadItem, function (error, result) {
-                          return error ? { error: error } : { result: result };
-                        });
+                        _context6.next = 15;
+                        return asyncBucketUpsert(uploadItem.entryId, uploadItem);
 
                       case 15:
-                        results = _context5.sent;
-                        return _context5.abrupt("return", { entryId: item.entryId, results: results });
+                        results = _context6.sent;
 
-                      case 17:
+                        console.log(results);
+                        return _context6.abrupt("return", results);
+
+                      case 18:
                       case "end":
-                        return _context5.stop();
+                        return _context6.stop();
                     }
                   }
-                }, _callee5, undefined);
+                }, _callee6, undefined);
               }));
 
-              return function (_x10) {
-                return _ref6.apply(this, arguments);
+              return function (_x13) {
+                return _ref7.apply(this, arguments);
               };
             }()));
 
-          case 5:
-            resultArray = _context6.sent;
-            return _context6.abrupt("return", resultArray);
+          case 6:
+            resultArray = _context7.sent;
+            return _context7.abrupt("return", resultArray);
 
-          case 7:
+          case 10:
+            _context7.prev = 10;
+            _context7.t0 = _context7["catch"](0);
+
+            console.log(_context7.t0);
+            throw new Error("Something failed on the entry import");
+
+          case 14:
           case "end":
-            return _context6.stop();
+            return _context7.stop();
         }
       }
-    }, _callee6, undefined);
+    }, _callee7, undefined, [[0, 10]]);
   }));
 
-  return function importEntries(_x7, _x8, _x9) {
-    return _ref5.apply(this, arguments);
+  return function importEntries(_x10, _x11, _x12) {
+    return _ref6.apply(this, arguments);
   };
 }();
 
@@ -289,92 +327,55 @@ router.post("/parts", function (req, res) {
   var upload = req.files.upload;
 
   upload.mv("./temp/" + upload.name).then(function () {
-    var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(error) {
-      return regeneratorRuntime.wrap(function _callee7$(_context7) {
+    var _ref8 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(error) {
+      return regeneratorRuntime.wrap(function _callee8$(_context8) {
         while (1) {
-          switch (_context7.prev = _context7.next) {
+          switch (_context8.prev = _context8.next) {
             case 0:
               if (!error) {
-                _context7.next = 2;
+                _context8.next = 2;
                 break;
               }
 
               throw error;
 
             case 2:
-              return _context7.abrupt("return", importParts("./temp/" + upload.name));
+              return _context8.abrupt("return", importParts("./temp/" + upload.name));
 
             case 3:
             case "end":
-              return _context7.stop();
+              return _context8.stop();
           }
         }
-      }, _callee7, undefined);
+      }, _callee8, undefined);
     }));
 
-    return function (_x11) {
-      return _ref7.apply(this, arguments);
+    return function (_x14) {
+      return _ref8.apply(this, arguments);
     };
   }()).then(function (result) {
-    res.status(200).send({ result: result });
+    res.status(200).send(result);
   }).catch(function (error) {
-    res.status(500).send({ error: error });
+    res.status(500).send(error);
   });
 });
 
-router.post("/entry", function () {
-  var _ref8 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(req, res) {
-    var upload, error, results;
-    return regeneratorRuntime.wrap(function _callee8$(_context8) {
-      while (1) {
-        switch (_context8.prev = _context8.next) {
-          case 0:
-            if (!req.files) {
-              res.status(400).send({ error: "No files were uploaded." });
-            }
-            upload = req.files.upload;
-            _context8.prev = 2;
-            _context8.next = 5;
-            return upload.mv("./temp/" + upload.name);
+router.post("/entry", function (req, res) {
+  if (!req.files) {
+    res.status(400).send({ error: "No files were uploaded." });
+  }
+  var upload = req.files.upload;
 
-          case 5:
-            error = _context8.sent;
-
-            if (!error) {
-              _context8.next = 8;
-              break;
-            }
-
-            throw error;
-
-          case 8:
-            _context8.next = 10;
-            return importEntries("./temp/" + upload.name, dev, sess);
-
-          case 10:
-            results = _context8.sent;
-
-            res.status(200).send({ results: results });
-            _context8.next = 17;
-            break;
-
-          case 14:
-            _context8.prev = 14;
-            _context8.t0 = _context8["catch"](2);
-
-            res.status(500).send({ error: _context8.t0 });
-
-          case 17:
-          case "end":
-            return _context8.stop();
-        }
-      }
-    }, _callee8, undefined, [[2, 14]]);
-  }));
-
-  return function (_x12, _x13) {
-    return _ref8.apply(this, arguments);
-  };
-}());
+  upload.mv("./temp/" + upload.name).then(function (error) {
+    if (error) {
+      throw error;
+    }
+    return importEntries("./temp/" + upload.name, dev, sess);
+  }).then(function (result) {
+    res.status(200).send(result);
+  }).catch(function (error) {
+    res.status(500).send(error);
+  });
+});
 
 exports.default = router;

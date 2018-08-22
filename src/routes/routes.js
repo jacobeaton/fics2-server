@@ -100,6 +100,8 @@ router.get("/delete/:type/:password", async (req, res) => {
     } catch (error) {
       res.status(500).send(error)
     }
+  } else {
+    res.status(400).send("No type or password is incorrect!")
   }
 })
 

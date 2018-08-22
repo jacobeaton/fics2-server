@@ -184,7 +184,7 @@ router.get("/delete/:type/:password", function () {
             _req$params = req.params, type = _req$params.type, password = _req$params.password;
 
             if (!(type && password === _config2.default.password)) {
-              _context4.next = 14;
+              _context4.next = 16;
               break;
             }
 
@@ -207,6 +207,13 @@ router.get("/delete/:type/:password", function () {
             res.status(500).send(_context4.t0);
 
           case 14:
+            _context4.next = 17;
+            break;
+
+          case 16:
+            res.status(400).send("No type or password is incorrect!");
+
+          case 17:
           case "end":
             return _context4.stop();
         }
