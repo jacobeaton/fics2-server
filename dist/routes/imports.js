@@ -129,16 +129,6 @@ var newEntryId = function () {
   };
 }();
 
-var dev = {
-  deviceId: "9001",
-  firstName: "Michael",
-  lastName: "Powell",
-  isActive: true,
-  isAuditing: false,
-  role: 5,
-  type: "device"
-};
-
 var sess = {
   auditActive: false,
   collectActive: true,
@@ -247,17 +237,18 @@ var importEntries = function () {
             _context7.next = 6;
             return Promise.all(jsonArray.map(function () {
               var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(item) {
-                var NOW, partNumber, qty, locationID, uploadItem, results;
+                var NOW, partNumber, qty, locationID, wip, uploadItem, results;
                 return regeneratorRuntime.wrap(function _callee6$(_context6) {
                   while (1) {
                     switch (_context6.prev = _context6.next) {
                       case 0:
                         NOW = new Date().toISOString();
                         partNumber = item.partNumber, qty = item.qty, locationID = item.locationID;
-                        _context6.next = 4;
-                        return newEntryId(device.deviceId, partNumber);
+                        wip = item.wip;
+                        _context6.next = 5;
+                        return newEntryId(device.deviceId, wip ? wip : partNumber);
 
-                      case 4:
+                      case 5:
                         _context6.t0 = _context6.sent;
                         _context6.t1 = NOW;
                         _context6.t2 = NOW;
@@ -278,16 +269,16 @@ var importEntries = function () {
                           device: _context6.t6,
                           session: _context6.t7
                         };
-                        _context6.next = 15;
+                        _context6.next = 16;
                         return asyncBucketUpsert(uploadItem.entryId, uploadItem);
 
-                      case 15:
+                      case 16:
                         results = _context6.sent;
 
                         console.log(results);
                         return _context6.abrupt("return", results);
 
-                      case 18:
+                      case 19:
                       case "end":
                         return _context6.stop();
                     }
@@ -364,17 +355,27 @@ router.post("/parts", function (req, res) {
   });
 });
 
-router.post("/entry", function (req, res) {
+router.post("/entry/:device/:session", function (req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  console.log(req.files);
   if (!req.files) {
-    res.status(400).send({ error: "No files were uploaded." });
+    return res.status(400).send({ error: "No files were uploaded." });
   }
   var upload = req.files.upload;
 
+  var deviceObjString = req.params.device;
+  var sessionObjString = req.params.session;
+  console.log(deviceObjString);
+  console.log(sessionObjString);
+  console.log(JSON.parse(decodeURIComponent(deviceObjString)));
+  console.log(JSON.parse(decodeURIComponent(sessionObjString)));
+  var device = JSON.parse(decodeURIComponent(deviceObjString));
+  var session = JSON.parse(decodeURIComponent(sessionObjString));
   upload.mv("./temp/" + upload.name).then(function (error) {
     if (error) {
       throw error;
     }
-    return importEntries("./temp/" + upload.name, dev, sess);
+    return importEntries("./temp/" + upload.name, device, session);
   }).then(function (result) {
     res.status(200).send(result);
   }).catch(function (error) {

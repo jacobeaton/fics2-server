@@ -17,7 +17,7 @@ const bucket = cluster.openBucket(cbConfig.bucket)
 
 const router = Router()
 router.use(bodyParser.json())
-router.use(bodyParser.urlencoded())
+router.use(bodyParser.urlencoded({ extended: true }))
 router.use(json2xls.middleware)
 
 const asyncBucketQuery = async (query, _bucket = bucket) =>

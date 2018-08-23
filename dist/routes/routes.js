@@ -61,7 +61,6 @@ router.get("/query", function (req, res) {
       console.log("error: " + error);
       return res.status(500).send({ error: error });
     }
-    console.log("result: " + result);
     return res.status(200).send({ result: result });
   });
 });
@@ -313,49 +312,26 @@ router.get("/variance/:limit", function () {
 
 //* * Dont Use UPSERT, as it creates new documents */
 
-router.put("/upsert", function () {
-  var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(req, res) {
-    var document;
-    return regeneratorRuntime.wrap(function _callee7$(_context7) {
-      while (1) {
-        switch (_context7.prev = _context7.next) {
-          case 0:
-            if (req.body.testKey) {
-              console.log(req.body.testKey);
-            }
+/*router.put("/upsert", async (req, res) => {
+  if (req.body.testKey) {
+    console.log(req.body.testKey)
+  }
 
-            if (req.body._id) {
-              _context7.next = 3;
-              break;
-            }
+  if (!req.body._id) {
+    return res.status(500).send({ error: "No _id specified in request body." })
+  }
 
-            return _context7.abrupt("return", res.status(500).send({ error: "No _id specified in request body." }));
+  const document = req.body
 
-          case 3:
-            document = req.body;
+  bucket.upsert(req.body._id, document, (error, response) => {
+    if (error) {
+      return res.status(500).send(error.message)
+    }
+    console.log(response)
+  })
 
-
-            bucket.upsert(req.body._id, document, function (error, response) {
-              if (error) {
-                return res.status(500).send(error.message);
-              }
-              console.log(response);
-            });
-
-            return _context7.abrupt("return", res.status(200).send(res.data));
-
-          case 6:
-          case "end":
-            return _context7.stop();
-        }
-      }
-    }, _callee7, undefined);
-  }));
-
-  return function (_x11, _x12) {
-    return _ref7.apply(this, arguments);
-  };
-}());
+  return res.status(200).send(res.data)
+})*/
 
 /*
 router.put("/doc/save/", async (req, res) => {

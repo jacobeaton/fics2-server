@@ -43,16 +43,6 @@ const newEntryId = async (deviceId, partNumber) => {
   return entryId
 }
 
-const dev = {
-  deviceId: "9001",
-  firstName: "Michael",
-  lastName: "Powell",
-  isActive: true,
-  isAuditing: false,
-  role: 5,
-  type: "device"
-}
-
 const sess = {
   auditActive: false,
   collectActive: true,
@@ -111,8 +101,9 @@ const importEntries = async (filePath, device, session) => {
       jsonArray.map(async item => {
         const NOW = new Date().toISOString()
         const { partNumber, qty, locationID } = item
+        const wip = item.wip
         const uploadItem = {
-          entryId: await newEntryId(device.deviceId, partNumber),
+          entryId: await newEntryId(device.deviceId, wip ? wip : partNumber),
           createdAt: NOW,
           updatedAt: NOW,
           partNumber,
@@ -156,18 +147,24 @@ router.post("/parts", (req, res) => {
     })
 })
 
-router.post("/entry", (req, res) => {
+router.post("/entry/:device/:session", (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*")
+  console.log(req.files)
   if (!req.files) {
-    res.status(400).send({ error: "No files were uploaded." })
+    return res.status(400).send({ error: "No files were uploaded." })
   }
   const { upload } = req.files
+  const deviceObjString = req.params.device
+  const sessionObjString = req.params.session
+  const device = JSON.parse(decodeURIComponent(deviceObjString))
+  const session = JSON.parse(decodeURIComponent(sessionObjString))
   upload
     .mv(`./temp/${upload.name}`)
     .then(error => {
       if (error) {
         throw error
       }
-      return importEntries(`./temp/${upload.name}`, dev, sess)
+      return importEntries(`./temp/${upload.name}`, device, session)
     })
     .then(result => {
       res.status(200).send(result)

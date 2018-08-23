@@ -42,7 +42,6 @@ router.get("/query", (req, res) => {
       console.log(`error: ${error}`)
       return res.status(500).send({ error })
     }
-    console.log(`result: ${result}`)
     return res.status(200).send({ result })
   })
 })
@@ -145,7 +144,7 @@ router.get("/variance/:limit", async (req, res) => {
 
 //* * Dont Use UPSERT, as it creates new documents */
 
-router.put("/upsert", async (req, res) => {
+/*router.put("/upsert", async (req, res) => {
   if (req.body.testKey) {
     console.log(req.body.testKey)
   }
@@ -164,7 +163,7 @@ router.put("/upsert", async (req, res) => {
   })
 
   return res.status(200).send(res.data)
-})
+})*/
 
 /*
 router.put("/doc/save/", async (req, res) => {

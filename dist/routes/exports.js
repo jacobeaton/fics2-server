@@ -48,7 +48,7 @@ var bucket = cluster.openBucket(cbConfig.bucket);
 
 var router = (0, _express.Router)();
 router.use(_bodyParser2.default.json());
-router.use(_bodyParser2.default.urlencoded());
+router.use(_bodyParser2.default.urlencoded({ extended: true }));
 router.use(_json2xls2.default.middleware);
 
 var asyncBucketQuery = function () {

@@ -30,6 +30,10 @@ var _exports = require("./routes/exports");
 
 var _exports2 = _interopRequireDefault(_exports);
 
+var _auth = require("./routes/auth");
+
+var _auth2 = _interopRequireDefault(_auth);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var app = (0, _express2.default)();
@@ -37,6 +41,7 @@ var app = (0, _express2.default)();
 app.use("/api", _routes2.default);
 app.use("/imports", _imports2.default);
 app.use("/exports", _exports2.default);
+app.use("/auth", _auth2.default);
 
 app.use((0, _cors2.default)());
 app.listen(_config2.default.express.port, function () {
