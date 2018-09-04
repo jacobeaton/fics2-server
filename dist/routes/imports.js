@@ -316,6 +316,7 @@ var importEntries = function () {
 }();
 
 router.post("/parts", function (req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
   if (!req.files) {
     res.status(400).send({ error: "No files were uploaded." });
   }
@@ -365,10 +366,6 @@ router.post("/entry/:device/:session", function (req, res) {
 
   var deviceObjString = req.params.device;
   var sessionObjString = req.params.session;
-  console.log(deviceObjString);
-  console.log(sessionObjString);
-  console.log(JSON.parse(decodeURIComponent(deviceObjString)));
-  console.log(JSON.parse(decodeURIComponent(sessionObjString)));
   var device = JSON.parse(decodeURIComponent(deviceObjString));
   var session = JSON.parse(decodeURIComponent(sessionObjString));
   upload.mv("./temp/" + upload.name).then(function (error) {

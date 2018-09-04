@@ -210,7 +210,7 @@ router.get("/x3file", function () {
                           location: "01",
                           class: "A",
                           unit: "" + part.unit,
-                          always1: "1,,,,"
+                          always1: "1"
                         };
                         return _context4.abrupt("return", result);
 
@@ -230,7 +230,7 @@ router.get("/x3file", function () {
           case 11:
             partsWithEntry = _context5.sent;
 
-            _fs2.default.writeFile("temp/x3import.csv", (0, _json2csv.parse)((0, _lodash2.default)(partsWithEntry), { header: false }), function (err) {
+            _fs2.default.writeFile("temp/x3import.csv", (0, _json2csv.parse)((0, _lodash2.default)(partsWithEntry), { header: false, eol: '\r\n' }), function (err) {
               if (err) return res.status(500).send(err);
               return res.status(200).download(_appRootPath2.default + "/temp/x3import.csv", "x3import.csv");
             });

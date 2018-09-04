@@ -127,6 +127,7 @@ const importEntries = async (filePath, device, session) => {
 }
 
 router.post("/parts", (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*")
   if (!req.files) {
     res.status(400).send({ error: "No files were uploaded." })
   }

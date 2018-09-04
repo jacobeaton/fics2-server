@@ -93,14 +93,14 @@ router.get("/x3file", async (req, res) => {
         location: `01`,
         class: `A`,
         unit: `${part.unit}`,
-        always1: `1,,,,`
+        always1: `1`,
       }
       return result
     })
   )
   fs.writeFile(
     "temp/x3import.csv",
-    parse(flatten(partsWithEntry), { header: false }),
+    parse(flatten(partsWithEntry), { header: false, eol: '\r\n' }),
     err => {
       if (err) return res.status(500).send(err)
       return res
