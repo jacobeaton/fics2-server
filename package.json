@@ -25,6 +25,7 @@
     "json2csv": "^4.2.1",
     "json2xls": "^0.1.2",
     "lodash.flatten": "^4.4.0",
+    "lodash.flattendeep": "^4.4.0",
     "moment": "^2.22.2",
     "morgan": "^1.9.0",
     "mssql": "^4.2.1",
