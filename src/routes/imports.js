@@ -1,3 +1,4 @@
+// @format
 import { Router } from "express"
 import bodyParser from "body-parser"
 import couchbase, { N1qlQuery } from "couchbase"
@@ -23,7 +24,7 @@ const asyncBucketGet = async (id, _bucket = bucket) =>
   })
 
 const asyncBucketUpsert = async (id, doc, _bucket = bucket) => {
-  new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     _bucket.upsert(id, doc, (err, result) => {
       if (err) reject(err)
       else {
@@ -47,7 +48,7 @@ const sess = {
   auditActive: false,
   collectActive: true,
   sessionDate: "2018-06-07T14:58:08-05:00",
-  sessionId: "SCS000022",
+  sessionId: "SCS000023",
   type: "session",
   updatedAt: "2018-08-14T19:28:08-05:00"
 }
