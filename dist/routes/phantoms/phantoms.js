@@ -62,7 +62,7 @@ var isPhantom = function () {
               break;
             }
 
-            return _context5.abrupt("return", NotAPhantomError);
+            throw NotAPhantomError;
 
           case 9:
             return _context5.abrupt("return", true);

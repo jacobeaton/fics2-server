@@ -58,7 +58,7 @@ async function isPhantom(partNumber) {
   const NotAPhantomError = new Error(`${partNumber} is not a phantom or it doesn't exist!`);
   if (!recordset.length) throw NotAPhantomError
   if (recordset[0].itemCategory != "PHANT") {
-    return NotAPhantomError 
+    throw NotAPhantomError 
   }
   return true
 }
