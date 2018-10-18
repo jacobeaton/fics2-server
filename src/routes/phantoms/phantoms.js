@@ -55,7 +55,12 @@ async function getBom(partNumber, qty) {
 
 async function isPhantom(partNumber) {
   const { recordset } = await SageX3.db.query(getItemCategory(partNumber))
-  return recordset[0].itemCategory === "PHANT" ? true : false
+  const NotAPhantomError = new Error(`${partNumber} is not a phantom or it doesn't exist!`);
+  if (!recordset.length) throw NotAPhantomError
+  if (recordset[0].itemCategory != "PHANT") {
+    return NotAPhantomError 
+  }
+  return true
 }
 
 async function insertPhantomEntries(bomArray, device, session) {
@@ -97,7 +102,19 @@ async function isBottomLevel(bomItem) {
   }
 }
 
+router.get('/:partNumber', async (req, res) => {
+  try {
+   const { partNumber } = req.params  
+   const result = await isPhantom(partNumber);
+   return res.status(200).send({result});
+  }catch(error) {
+    console.error(error);
+    return res.status(400).send({error: error.message})
+  }
+})
+
 router.post("/entry", async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*")
   try {
     const { phantoms, context } = req.body
     if (!phantoms.length)

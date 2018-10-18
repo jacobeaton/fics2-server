@@ -11,13 +11,13 @@ import Phantoms from "./routes/phantoms/phantoms"
 
 const app = express()
 
+app.use(cors())
 app.use("/api", Router)
 app.use("/imports", Imports)
 app.use("/exports", Exports)
 app.use("/auth", Auth)
 app.use("/phantoms", Phantoms)
 
-app.use(cors())
 app.listen(config.express.port, () => {
   console.log(`Server is listening on port ${config.express.port}...`)
 })
