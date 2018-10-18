@@ -37,6 +37,7 @@ var asyncBucketGet = function () {
         switch (_context.prev = _context.next) {
           case 0:
             return _context.abrupt("return", new Promise(function (resolve, reject) {
+              console.log("ID that was passed is " + id);
               _bucket.get(id, function (err, result) {
                 if (err) {
                   if (err.code === 13) resolve(false);else reject(err);
@@ -77,7 +78,7 @@ router.get("/login/:id", function () {
           case 5:
             result = _context2.sent;
 
-            console.log(result.value);
+            console.log(result);
             return _context2.abrupt("return", res.status(200).send(result));
 
           case 10:

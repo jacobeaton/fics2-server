@@ -12,6 +12,7 @@ const bucket = cluster.openBucket(cbConfig.bucket)
 
 const asyncBucketGet = async (id, _bucket = bucket) =>
   new Promise((resolve, reject) => {
+    console.log(`ID that was passed is ${id}`)
     _bucket.get(id, (err, result) => {
       if (err) {
         if (err.code === 13) resolve(false)
@@ -29,7 +30,7 @@ router.get("/login/:id", async (req, res) => {
   const { id } = req.params
   try {
     const result = await asyncBucketGet(id)
-    console.log(result.value)
+    console.log(result)
     return res.status(200).send(result)
   } catch (error) {
     return res.status(500).send(error)
