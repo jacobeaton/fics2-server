@@ -2,6 +2,7 @@
 import { Router } from "express"
 import bodyParser from "body-parser"
 import couchbase, { N1qlQuery } from "couchbase"
+import uuid from "uuid4"
 
 import config from "../../config.json"
 
@@ -19,14 +20,15 @@ router.use(bodyParser.urlencoded({ extended: true }))
 const asyncBucketGet = async (id, _bucket = bucket) =>
   new Promise((resolve, reject) => {
     _bucket.get(id, (err, result) => {
-      if (err.code === 13) resolve(false)
-      else if (err) reject(err)
-      else resolve(result)
+      if (err) {
+        if (err.code === 13) resolve(false)
+        else reject(err)
+      } else resolve(result)
     })
   })
 
 const asyncBucketUpsert = async (id, doc, _bucket = bucket) => {
-  new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     _bucket.upsert(id, doc, (err, result) => {
       if (err) reject(err)
       else {
@@ -46,20 +48,27 @@ const newEntryId = async (deviceId, partNumber) => {
   return entryId
 }
 
+router.get("/:id", async (req, res) => {
+  console.log(req.params)
+  const result = await asyncBucketGet(req.params.id)
+  console.log(result)
+  return res.status(200).send({ result })
+})
+
 router.post("/new", async (req, res) => {
   try {
-    const { entry, context } = req.body
-    if (!entry || !context)
+    const { entry, deviceId } = req.body
+    if (!entry || !deviceId)
       throw new Error(
-        `The request must have entry and context properties on the request body.`
+        `The request must have entry and deviceId properties on the request body.`
       )
     const newEntry = Object.assign({}, entry, {
-      entryId: await newEntryId(context.device.deviceId, entry.partNumber)
+      entryId: await newEntryId(deviceId, entry.partNumber)
     })
     const result = await asyncBucketUpsert(newEntry.entryId, newEntry)
-    res.status(200).send({ result })
+    res.status(200).send({ result, entryId: newEntry.entryId })
   } catch (error) {
-    res.status(400).send({ error })
+    res.status(400).send({ error: error.message })
   }
 })
 
