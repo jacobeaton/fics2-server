@@ -6,9 +6,9 @@ import config from "../config"
 import Router from "./routes/routes"
 import Imports from "./routes/imports"
 import Exports from "./routes/exports"
+import Entry from './routes/entry'
 import Auth from "./routes/auth"
 import Phantoms from "./routes/phantoms/phantoms"
-
 const app = express()
 
 app.use(cors())
@@ -17,6 +17,7 @@ app.use("/imports", Imports)
 app.use("/exports", Exports)
 app.use("/auth", Auth)
 app.use("/phantoms", Phantoms)
+app.use("/entry", Entry)
 
 app.listen(config.express.port, () => {
   console.log(`Server is listening on port ${config.express.port}...`)

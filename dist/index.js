@@ -30,6 +30,10 @@ var _exports = require("./routes/exports");
 
 var _exports2 = _interopRequireDefault(_exports);
 
+var _entry = require("./routes/entry");
+
+var _entry2 = _interopRequireDefault(_entry);
+
 var _auth = require("./routes/auth");
 
 var _auth2 = _interopRequireDefault(_auth);
@@ -48,6 +52,7 @@ app.use("/imports", _imports2.default);
 app.use("/exports", _exports2.default);
 app.use("/auth", _auth2.default);
 app.use("/phantoms", _phantoms2.default);
+app.use("/entry", _entry2.default);
 
 app.listen(_config2.default.express.port, function () {
   console.log("Server is listening on port " + _config2.default.express.port + "...");

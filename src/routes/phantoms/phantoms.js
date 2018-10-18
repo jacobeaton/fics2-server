@@ -74,7 +74,7 @@ async function insertPhantomEntries(bomArray, device, session) {
         updatedAt: NOW,
         partNumber,
         qty: parseFloat(qty),
-        locationID: "8D",
+        locationID: "8W",
         type: "entry",
         void: false,
         device,

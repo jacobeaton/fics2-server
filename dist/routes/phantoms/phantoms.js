@@ -116,7 +116,7 @@ var insertPhantomEntries = function () {
                           updatedAt: _context6.t2,
                           partNumber: _context6.t3,
                           qty: _context6.t4,
-                          locationID: "8D",
+                          locationID: "8W",
                           type: "entry",
                           void: false,
                           device: _context6.t5,
