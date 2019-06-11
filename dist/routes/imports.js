@@ -32,7 +32,8 @@ var _config2 = _interopRequireDefault(_config);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; } // @format
+
 
 // Set up couchbase cluster and bucket //
 var cbConfig = _config2.default.couchbase;
@@ -75,13 +76,13 @@ var asyncBucketUpsert = function () {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
-            new Promise(function (resolve, reject) {
+            return _context2.abrupt("return", new Promise(function (resolve, reject) {
               _bucket.upsert(id, doc, function (err, result) {
                 if (err) reject(err);else {
                   resolve(result);
                 }
               });
-            });
+            }));
 
           case 1:
           case "end":
@@ -133,7 +134,7 @@ var sess = {
   auditActive: false,
   collectActive: true,
   sessionDate: "2018-06-07T14:58:08-05:00",
-  sessionId: "SCS000022",
+  sessionId: "SCS000023",
   type: "session",
   updatedAt: "2018-08-14T19:28:08-05:00"
 

@@ -12,20 +12,27 @@ var getBom = function () {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
-            _context4.next = 2;
+            _context4.prev = 0;
+            _context4.next = 3;
             return _db2.default.db.query((0, _phantomQueries.getBomd)(partNumber, qty));
 
-          case 2:
+          case 3:
             _ref5 = _context4.sent;
             recordset = _ref5.recordset;
             return _context4.abrupt("return", recordset);
 
-          case 5:
+          case 8:
+            _context4.prev = 8;
+            _context4.t0 = _context4["catch"](0);
+
+            console.log(_context4.t0);
+
+          case 11:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4, this);
+    }, _callee4, this, [[0, 8]]);
   }));
 
   return function getBom(_x8, _x9) {
@@ -176,8 +183,10 @@ var isBottomLevel = function () {
           case 3:
             recordset = _context8.sent;
 
+            console.log("recordset", recordset);
+
             if (!(recordset.length && itemCategory === "PHANT")) {
-              _context8.next = 8;
+              _context8.next = 9;
               break;
             }
 
@@ -185,10 +194,10 @@ var isBottomLevel = function () {
               return isBottomLevel(record);
             })));
 
-          case 8:
+          case 9:
             return _context8.abrupt("return", bomItem);
 
-          case 9:
+          case 10:
           case "end":
             return _context8.stop();
         }
@@ -231,7 +240,8 @@ var _phantomQueries = require("./phantom-queries");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; } // @format
+
 
 // Set up couchbase cluster and bucket //
 var cbConfig = _config2.default.couchbase;
@@ -333,7 +343,7 @@ var newEntryId = function () {
   };
 }();
 
-router.get('/:partNumber', function () {
+router.get("/:partNumber", function () {
   var _ref11 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee9(req, res) {
     var partNumber, result;
     return regeneratorRuntime.wrap(function _callee9$(_context9) {
@@ -459,15 +469,17 @@ router.post("/entry", function () {
 
                       case 14:
                         multiLevelBom = _context11.sent;
+
+                        console.log(multiLevelBom);
                         flattenedBom = (0, _lodash2.default)(multiLevelBom);
-                        _context11.next = 18;
+                        _context11.next = 19;
                         return insertPhantomEntries(flattenedBom, device, session);
 
-                      case 18:
+                      case 19:
                         resultArray = _context11.sent;
                         return _context11.abrupt("return", resultArray);
 
-                      case 20:
+                      case 21:
                       case "end":
                         return _context11.stop();
                     }

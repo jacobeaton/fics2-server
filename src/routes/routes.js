@@ -53,6 +53,23 @@ const asyncBucketQuery = async (query, _bucket = bucket) =>
     })
   })
 
+router.get("/audit/user/counts", async (req, res) => {
+    try {
+      const queryString = N1qlQuery.fromString(
+        `
+        SELECT auditedBy, count(auditNeeded) as auditNeededCount FROM fics WHERE type="entry"
+          AND auditNeeded=true
+          AND (auditedDateTime IS NULL OR auditedDateTime IS MISSING)
+          GROUP BY auditedBy
+        `
+      )
+      const result = await asyncBucketQuery(queryString)
+      res.status(200).send({result})
+    } catch(error) {
+      res.status(400).send({error: error.message}) 
+    }
+})
+
 router.get("/variance", async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*")
   const partsQuery = N1qlQuery.fromString(

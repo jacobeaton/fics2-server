@@ -1,3 +1,4 @@
+// @format
 import { Router } from "express"
 import bodyParser from "body-parser"
 import couchbase, { N1qlQuery } from "couchbase"
@@ -49,16 +50,22 @@ const newEntryId = async (deviceId, partNumber) => {
 }
 
 async function getBom(partNumber, qty) {
-  const { recordset } = await SageX3.db.query(getBomd(partNumber, qty))
-  return recordset
+  try {
+    const { recordset } = await SageX3.db.query(getBomd(partNumber, qty))
+    return recordset
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 async function isPhantom(partNumber) {
   const { recordset } = await SageX3.db.query(getItemCategory(partNumber))
-  const NotAPhantomError = new Error(`${partNumber} is not a phantom or it doesn't exist!`);
+  const NotAPhantomError = new Error(
+    `${partNumber} is not a phantom or it doesn't exist!`
+  )
   if (!recordset.length) throw NotAPhantomError
   if (recordset[0].itemCategory != "PHANT") {
-    throw NotAPhantomError 
+    throw NotAPhantomError
   }
   return true
 }
@@ -91,6 +98,7 @@ async function insertPhantomEntries(bomArray, device, session) {
 async function isBottomLevel(bomItem) {
   const { partNumber, qty, itemCategory } = bomItem
   const recordset = await getBom(partNumber, qty)
+  console.log("recordset", recordset)
   if (recordset.length && itemCategory === "PHANT") {
     return Promise.all(
       recordset.map(record => {
@@ -102,14 +110,14 @@ async function isBottomLevel(bomItem) {
   }
 }
 
-router.get('/:partNumber', async (req, res) => {
+router.get("/:partNumber", async (req, res) => {
   try {
-   const { partNumber } = req.params  
-   const result = await isPhantom(partNumber);
-   return res.status(200).send({result});
-  }catch(error) {
-    console.error(error);
-    return res.status(400).send({error: error.message})
+    const { partNumber } = req.params
+    const result = await isPhantom(partNumber)
+    return res.status(200).send({ result })
+  } catch (error) {
+    console.error(error)
+    return res.status(400).send({ error: error.message })
   }
 })
 
@@ -142,6 +150,7 @@ router.post("/entry", async (req, res) => {
             return bomItem
           })
         )
+        console.log(multiLevelBom)
         const flattenedBom = flattenDeep(multiLevelBom)
         const resultArray = await insertPhantomEntries(
           flattenedBom,

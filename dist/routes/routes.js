@@ -91,79 +91,37 @@ var asyncBucketQuery = function () {
   };
 }();
 
-router.get("/variance", function () {
-  var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(req, res) {
-    var partsQuery, entriesQuery, parts, entries, partsWithEntry;
-    return regeneratorRuntime.wrap(function _callee3$(_context3) {
+router.get("/audit/user/counts", function () {
+  var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(req, res) {
+    var queryString, result;
+    return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
-        switch (_context3.prev = _context3.next) {
+        switch (_context2.prev = _context2.next) {
           case 0:
-            res.setHeader("Access-Control-Allow-Origin", "*");
-            partsQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, description, systemQty, cost FROM fics WHERE type=\"part\"");
-            entriesQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, sum(qty) as counted FROM fics where type=\"entry\" and void=false GROUP BY partNumber");
-            _context3.next = 5;
-            return asyncBucketQuery(partsQuery);
+            _context2.prev = 0;
+            queryString = _couchbase.N1qlQuery.fromString("\n        SELECT auditedBy, count(auditNeeded) as auditNeededCount FROM fics WHERE type=\"entry\"\n          AND auditNeeded=true\n          AND (auditedDateTime IS NULL OR auditedDateTime IS MISSING)\n          GROUP BY auditedBy\n        ");
+            _context2.next = 4;
+            return asyncBucketQuery(queryString);
 
-          case 5:
-            parts = _context3.sent;
-            _context3.next = 8;
-            return asyncBucketQuery(entriesQuery);
+          case 4:
+            result = _context2.sent;
+
+            res.status(200).send({ result: result });
+            _context2.next = 11;
+            break;
 
           case 8:
-            entries = _context3.sent;
-            _context3.next = 11;
-            return Promise.all(parts.map(function () {
-              var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(part) {
-                var filteredEntries, counted, variance, extVariance, result;
-                return regeneratorRuntime.wrap(function _callee2$(_context2) {
-                  while (1) {
-                    switch (_context2.prev = _context2.next) {
-                      case 0:
-                        _context2.next = 2;
-                        return Promise.all(entries.filter(function (entry) {
-                          return entry.partNumber === part.partNumber;
-                        }));
+            _context2.prev = 8;
+            _context2.t0 = _context2["catch"](0);
 
-                      case 2:
-                        filteredEntries = _context2.sent;
-                        counted = filteredEntries.length ? filteredEntries[0].counted : 0;
-                        variance = counted - part.systemQty;
-                        extVariance = variance * part.cost;
-                        result = {
-                          PartNum: part.partNumber,
-                          Description: part.description,
-                          SystemQty: part.systemQty,
-                          Counted: counted,
-                          Variance: variance,
-                          Cost: part.cost,
-                          ExtendedVariance: extVariance
-                        };
-                        return _context2.abrupt("return", result);
-
-                      case 8:
-                      case "end":
-                        return _context2.stop();
-                    }
-                  }
-                }, _callee2, undefined);
-              }));
-
-              return function (_x5) {
-                return _ref3.apply(this, arguments);
-              };
-            }()));
+            res.status(400).send({ error: _context2.t0.message });
 
           case 11:
-            partsWithEntry = _context3.sent;
-
-            res.status(200).send({ result: partsWithEntry });
-
-          case 13:
           case "end":
-            return _context3.stop();
+            return _context2.stop();
         }
       }
-    }, _callee3, undefined);
+    }, _callee2, undefined, [[0, 8]]);
   }));
 
   return function (_x3, _x4) {
@@ -171,96 +129,41 @@ router.get("/variance", function () {
   };
 }());
 
-router.get("/delete/:type/:password", function () {
-  var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(req, res) {
-    var _req$params, type, password, deleteQuery, result;
-
+router.get("/variance", function () {
+  var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(req, res) {
+    var partsQuery, entriesQuery, parts, entries, partsWithEntry;
     return regeneratorRuntime.wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
             res.setHeader("Access-Control-Allow-Origin", "*");
-            _req$params = req.params, type = _req$params.type, password = _req$params.password;
-
-            if (!(type && password === _config2.default.password)) {
-              _context4.next = 16;
-              break;
-            }
-
-            deleteQuery = _couchbase.N1qlQuery.fromString("DELETE FROM fics WHERE type=\"" + type + "\"");
-            _context4.prev = 4;
-            _context4.next = 7;
-            return asyncBucketQuery(deleteQuery);
-
-          case 7:
-            result = _context4.sent;
-
-            res.status(200).send(result);
-            _context4.next = 14;
-            break;
-
-          case 11:
-            _context4.prev = 11;
-            _context4.t0 = _context4["catch"](4);
-
-            res.status(500).send(_context4.t0);
-
-          case 14:
-            _context4.next = 17;
-            break;
-
-          case 16:
-            res.status(400).send("No type or password is incorrect!");
-
-          case 17:
-          case "end":
-            return _context4.stop();
-        }
-      }
-    }, _callee4, undefined, [[4, 11]]);
-  }));
-
-  return function (_x6, _x7) {
-    return _ref4.apply(this, arguments);
-  };
-}());
-
-router.get("/variance/:limit", function () {
-  var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(req, res) {
-    var limit, partsQuery, entriesQuery, parts, entries, partsWithEntry, sortedPartsWithEntry;
-    return regeneratorRuntime.wrap(function _callee6$(_context6) {
-      while (1) {
-        switch (_context6.prev = _context6.next) {
-          case 0:
-            res.setHeader("Access-Control-Allow-Origin", "*");
-            limit = req.params.limit;
             partsQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, description, systemQty, cost FROM fics WHERE type=\"part\"");
             entriesQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, sum(qty) as counted FROM fics where type=\"entry\" and void=false GROUP BY partNumber");
-            _context6.next = 6;
+            _context4.next = 5;
             return asyncBucketQuery(partsQuery);
 
-          case 6:
-            parts = _context6.sent;
-            _context6.next = 9;
+          case 5:
+            parts = _context4.sent;
+            _context4.next = 8;
             return asyncBucketQuery(entriesQuery);
 
-          case 9:
-            entries = _context6.sent;
-            _context6.next = 12;
+          case 8:
+            entries = _context4.sent;
+            _context4.next = 11;
             return Promise.all(parts.map(function () {
-              var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(part) {
+              var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(part) {
                 var filteredEntries, counted, variance, extVariance, result;
-                return regeneratorRuntime.wrap(function _callee5$(_context5) {
+                return regeneratorRuntime.wrap(function _callee3$(_context3) {
                   while (1) {
-                    switch (_context5.prev = _context5.next) {
+                    switch (_context3.prev = _context3.next) {
                       case 0:
-                        _context5.next = 2;
+                        _context3.next = 2;
                         return Promise.all(entries.filter(function (entry) {
                           return entry.partNumber === part.partNumber;
                         }));
 
                       case 2:
-                        filteredEntries = _context5.sent;
+                        filteredEntries = _context3.sent;
                         counted = filteredEntries.length ? filteredEntries[0].counted : 0;
                         variance = counted - part.systemQty;
                         extVariance = variance * part.cost;
@@ -273,23 +176,158 @@ router.get("/variance/:limit", function () {
                           Cost: part.cost,
                           ExtendedVariance: extVariance
                         };
-                        return _context5.abrupt("return", result);
+                        return _context3.abrupt("return", result);
 
                       case 8:
                       case "end":
-                        return _context5.stop();
+                        return _context3.stop();
                     }
                   }
-                }, _callee5, undefined);
+                }, _callee3, undefined);
               }));
 
-              return function (_x10) {
-                return _ref6.apply(this, arguments);
+              return function (_x7) {
+                return _ref4.apply(this, arguments);
+              };
+            }()));
+
+          case 11:
+            partsWithEntry = _context4.sent;
+
+            res.status(200).send({ result: partsWithEntry });
+
+          case 13:
+          case "end":
+            return _context4.stop();
+        }
+      }
+    }, _callee4, undefined);
+  }));
+
+  return function (_x5, _x6) {
+    return _ref3.apply(this, arguments);
+  };
+}());
+
+router.get("/delete/:type/:password", function () {
+  var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(req, res) {
+    var _req$params, type, password, deleteQuery, result;
+
+    return regeneratorRuntime.wrap(function _callee5$(_context5) {
+      while (1) {
+        switch (_context5.prev = _context5.next) {
+          case 0:
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            _req$params = req.params, type = _req$params.type, password = _req$params.password;
+
+            if (!(type && password === _config2.default.password)) {
+              _context5.next = 16;
+              break;
+            }
+
+            deleteQuery = _couchbase.N1qlQuery.fromString("DELETE FROM fics WHERE type=\"" + type + "\"");
+            _context5.prev = 4;
+            _context5.next = 7;
+            return asyncBucketQuery(deleteQuery);
+
+          case 7:
+            result = _context5.sent;
+
+            res.status(200).send(result);
+            _context5.next = 14;
+            break;
+
+          case 11:
+            _context5.prev = 11;
+            _context5.t0 = _context5["catch"](4);
+
+            res.status(500).send(_context5.t0);
+
+          case 14:
+            _context5.next = 17;
+            break;
+
+          case 16:
+            res.status(400).send("No type or password is incorrect!");
+
+          case 17:
+          case "end":
+            return _context5.stop();
+        }
+      }
+    }, _callee5, undefined, [[4, 11]]);
+  }));
+
+  return function (_x8, _x9) {
+    return _ref5.apply(this, arguments);
+  };
+}());
+
+router.get("/variance/:limit", function () {
+  var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(req, res) {
+    var limit, partsQuery, entriesQuery, parts, entries, partsWithEntry, sortedPartsWithEntry;
+    return regeneratorRuntime.wrap(function _callee7$(_context7) {
+      while (1) {
+        switch (_context7.prev = _context7.next) {
+          case 0:
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            limit = req.params.limit;
+            partsQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, description, systemQty, cost FROM fics WHERE type=\"part\"");
+            entriesQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, sum(qty) as counted FROM fics where type=\"entry\" and void=false GROUP BY partNumber");
+            _context7.next = 6;
+            return asyncBucketQuery(partsQuery);
+
+          case 6:
+            parts = _context7.sent;
+            _context7.next = 9;
+            return asyncBucketQuery(entriesQuery);
+
+          case 9:
+            entries = _context7.sent;
+            _context7.next = 12;
+            return Promise.all(parts.map(function () {
+              var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(part) {
+                var filteredEntries, counted, variance, extVariance, result;
+                return regeneratorRuntime.wrap(function _callee6$(_context6) {
+                  while (1) {
+                    switch (_context6.prev = _context6.next) {
+                      case 0:
+                        _context6.next = 2;
+                        return Promise.all(entries.filter(function (entry) {
+                          return entry.partNumber === part.partNumber;
+                        }));
+
+                      case 2:
+                        filteredEntries = _context6.sent;
+                        counted = filteredEntries.length ? filteredEntries[0].counted : 0;
+                        variance = counted - part.systemQty;
+                        extVariance = variance * part.cost;
+                        result = {
+                          PartNum: part.partNumber,
+                          Description: part.description,
+                          SystemQty: part.systemQty,
+                          Counted: counted,
+                          Variance: variance,
+                          Cost: part.cost,
+                          ExtendedVariance: extVariance
+                        };
+                        return _context6.abrupt("return", result);
+
+                      case 8:
+                      case "end":
+                        return _context6.stop();
+                    }
+                  }
+                }, _callee6, undefined);
+              }));
+
+              return function (_x12) {
+                return _ref7.apply(this, arguments);
               };
             }()));
 
           case 12:
-            partsWithEntry = _context6.sent;
+            partsWithEntry = _context7.sent;
             sortedPartsWithEntry = partsWithEntry.sort(function (a, b) {
               return Math.abs(b.ExtendedVariance) - Math.abs(a.ExtendedVariance);
             });
@@ -298,14 +336,14 @@ router.get("/variance/:limit", function () {
 
           case 15:
           case "end":
-            return _context6.stop();
+            return _context7.stop();
         }
       }
-    }, _callee6, undefined);
+    }, _callee7, undefined);
   }));
 
-  return function (_x8, _x9) {
-    return _ref5.apply(this, arguments);
+  return function (_x10, _x11) {
+    return _ref6.apply(this, arguments);
   };
 }());
 // End GET paths //
