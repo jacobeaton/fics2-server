@@ -99,7 +99,7 @@ router.get("/audit/user/counts", function () {
         switch (_context2.prev = _context2.next) {
           case 0:
             _context2.prev = 0;
-            queryString = _couchbase.N1qlQuery.fromString("\n        SELECT auditedBy, count(auditNeeded) as auditNeededCount FROM fics WHERE type=\"entry\"\n          AND auditNeeded=true\n          AND (auditedDateTime IS NULL OR auditedDateTime IS MISSING)\n          GROUP BY auditedBy\n        ");
+            queryString = _couchbase.N1qlQuery.fromString("\n        SELECT auditedBy, count(auditNeeded) as auditNeededCount FROM fics2 WHERE type=\"entry\"\n          AND auditNeeded=true\n          AND (auditedDateTime IS NULL OR auditedDateTime IS MISSING)\n          GROUP BY auditedBy\n        ");
             _context2.next = 4;
             return asyncBucketQuery(queryString);
 
@@ -137,8 +137,8 @@ router.get("/variance", function () {
         switch (_context4.prev = _context4.next) {
           case 0:
             res.setHeader("Access-Control-Allow-Origin", "*");
-            partsQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, description, systemQty, cost FROM fics WHERE type=\"part\"");
-            entriesQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, sum(qty) as counted FROM fics where type=\"entry\" and void=false GROUP BY partNumber");
+            partsQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, description, systemQty, cost FROM fics2 WHERE type=\"part\"");
+            entriesQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, sum(qty) as counted FROM fics2 where type=\"entry\" and void=false GROUP BY partNumber");
             _context4.next = 5;
             return asyncBucketQuery(partsQuery);
 
@@ -209,96 +209,60 @@ router.get("/variance", function () {
   };
 }());
 
-router.get("/delete/:type/:password", function () {
-  var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(req, res) {
-    var _req$params, type, password, deleteQuery, result;
-
-    return regeneratorRuntime.wrap(function _callee5$(_context5) {
-      while (1) {
-        switch (_context5.prev = _context5.next) {
-          case 0:
-            res.setHeader("Access-Control-Allow-Origin", "*");
-            _req$params = req.params, type = _req$params.type, password = _req$params.password;
-
-            if (!(type && password === _config2.default.password)) {
-              _context5.next = 16;
-              break;
-            }
-
-            deleteQuery = _couchbase.N1qlQuery.fromString("DELETE FROM fics WHERE type=\"" + type + "\"");
-            _context5.prev = 4;
-            _context5.next = 7;
-            return asyncBucketQuery(deleteQuery);
-
-          case 7:
-            result = _context5.sent;
-
-            res.status(200).send(result);
-            _context5.next = 14;
-            break;
-
-          case 11:
-            _context5.prev = 11;
-            _context5.t0 = _context5["catch"](4);
-
-            res.status(500).send(_context5.t0);
-
-          case 14:
-            _context5.next = 17;
-            break;
-
-          case 16:
-            res.status(400).send("No type or password is incorrect!");
-
-          case 17:
-          case "end":
-            return _context5.stop();
-        }
-      }
-    }, _callee5, undefined, [[4, 11]]);
-  }));
-
-  return function (_x8, _x9) {
-    return _ref5.apply(this, arguments);
-  };
-}());
+/*router.get("/delete/:type/:password", async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*")
+  const { type, password } = req.params
+  if (type && password === config.password) {
+    const deleteQuery = N1qlQuery.fromString(
+      `DELETE FROM fics2 WHERE type="${type}"`
+    )
+    try {
+      const result = await asyncBucketQuery(deleteQuery)
+      res.status(200).send(result)
+    } catch (error) {
+      res.status(500).send(error)
+    }
+  } else {
+    res.status(400).send("No type or password is incorrect!")
+  }
+})*/
 
 router.get("/variance/:limit", function () {
-  var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(req, res) {
+  var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(req, res) {
     var limit, partsQuery, entriesQuery, parts, entries, partsWithEntry, sortedPartsWithEntry;
-    return regeneratorRuntime.wrap(function _callee7$(_context7) {
+    return regeneratorRuntime.wrap(function _callee6$(_context6) {
       while (1) {
-        switch (_context7.prev = _context7.next) {
+        switch (_context6.prev = _context6.next) {
           case 0:
             res.setHeader("Access-Control-Allow-Origin", "*");
             limit = req.params.limit;
-            partsQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, description, systemQty, cost FROM fics WHERE type=\"part\"");
-            entriesQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, sum(qty) as counted FROM fics where type=\"entry\" and void=false GROUP BY partNumber");
-            _context7.next = 6;
+            partsQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, description, systemQty, cost FROM fics2 WHERE type=\"part\"");
+            entriesQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, sum(qty) as counted FROM fics2 where type=\"entry\" and void=false GROUP BY partNumber");
+            _context6.next = 6;
             return asyncBucketQuery(partsQuery);
 
           case 6:
-            parts = _context7.sent;
-            _context7.next = 9;
+            parts = _context6.sent;
+            _context6.next = 9;
             return asyncBucketQuery(entriesQuery);
 
           case 9:
-            entries = _context7.sent;
-            _context7.next = 12;
+            entries = _context6.sent;
+            _context6.next = 12;
             return Promise.all(parts.map(function () {
-              var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(part) {
+              var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(part) {
                 var filteredEntries, counted, variance, extVariance, result;
-                return regeneratorRuntime.wrap(function _callee6$(_context6) {
+                return regeneratorRuntime.wrap(function _callee5$(_context5) {
                   while (1) {
-                    switch (_context6.prev = _context6.next) {
+                    switch (_context5.prev = _context5.next) {
                       case 0:
-                        _context6.next = 2;
+                        _context5.next = 2;
                         return Promise.all(entries.filter(function (entry) {
                           return entry.partNumber === part.partNumber;
                         }));
 
                       case 2:
-                        filteredEntries = _context6.sent;
+                        filteredEntries = _context5.sent;
                         counted = filteredEntries.length ? filteredEntries[0].counted : 0;
                         variance = counted - part.systemQty;
                         extVariance = variance * part.cost;
@@ -311,23 +275,23 @@ router.get("/variance/:limit", function () {
                           Cost: part.cost,
                           ExtendedVariance: extVariance
                         };
-                        return _context6.abrupt("return", result);
+                        return _context5.abrupt("return", result);
 
                       case 8:
                       case "end":
-                        return _context6.stop();
+                        return _context5.stop();
                     }
                   }
-                }, _callee6, undefined);
+                }, _callee5, undefined);
               }));
 
-              return function (_x12) {
-                return _ref7.apply(this, arguments);
+              return function (_x10) {
+                return _ref6.apply(this, arguments);
               };
             }()));
 
           case 12:
-            partsWithEntry = _context7.sent;
+            partsWithEntry = _context6.sent;
             sortedPartsWithEntry = partsWithEntry.sort(function (a, b) {
               return Math.abs(b.ExtendedVariance) - Math.abs(a.ExtendedVariance);
             });
@@ -336,14 +300,14 @@ router.get("/variance/:limit", function () {
 
           case 15:
           case "end":
-            return _context7.stop();
+            return _context6.stop();
         }
       }
-    }, _callee7, undefined);
+    }, _callee6, undefined);
   }));
 
-  return function (_x10, _x11) {
-    return _ref6.apply(this, arguments);
+  return function (_x8, _x9) {
+    return _ref5.apply(this, arguments);
   };
 }());
 // End GET paths //

@@ -31,10 +31,10 @@ const asyncBucketQuery = async (query, _bucket = bucket) =>
 router.get("/variance", async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*")
   const partsQuery = N1qlQuery.fromString(
-    `SELECT partNumber, description, systemQty, cost FROM fics WHERE type="part"`
+    `SELECT partNumber, description, systemQty, cost FROM fics2 WHERE type="part"`
   )
   const entriesQuery = N1qlQuery.fromString(
-    `SELECT partNumber, sum(qty) as counted FROM fics where type="entry" and void=false GROUP BY partNumber`
+    `SELECT partNumber, sum(qty) as counted FROM fics2 where type="entry" and void=false GROUP BY partNumber`
   )
   const parts = await asyncBucketQuery(partsQuery)
   const entries = await asyncBucketQuery(entriesQuery)
@@ -65,10 +65,10 @@ router.get("/variance", async (req, res) => {
 router.get("/x3file", async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*")
   const partsQuery = N1qlQuery.fromString(
-    `SELECT partNumber, description, systemQty, cost, sessionId, countList, countListLine, unit FROM fics WHERE type="part" ORDER BY partNumber`
+    `SELECT partNumber, description, systemQty, cost, sessionId, countList, countListLine, unit FROM fics2 WHERE type="part" ORDER BY partNumber`
   )
   const entriesQuery = N1qlQuery.fromString(
-    `SELECT partNumber, sum(qty) as counted FROM fics where type="entry" and void=false GROUP BY partNumber`
+    `SELECT partNumber, sum(qty) as counted FROM fics2 where type="entry" and void=false GROUP BY partNumber`
   )
   const parts = await asyncBucketQuery(partsQuery)
   const entries = await asyncBucketQuery(entriesQuery)

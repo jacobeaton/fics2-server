@@ -25,6 +25,7 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 // Set up couchbase cluster and bucket //
 var cbConfig = _config2.default.couchbase;
 var cluster = new _couchbase2.default.Cluster(cbConfig.cluster);
+console.log("AUTH: ", cbConfig.username, cbConfig.password);
 cluster.authenticate(cbConfig.username, cbConfig.password);
 var bucket = cluster.openBucket(cbConfig.bucket);
 
@@ -37,12 +38,16 @@ var asyncBucketGet = function () {
         switch (_context.prev = _context.next) {
           case 0:
             return _context.abrupt("return", new Promise(function (resolve, reject) {
-              console.log("ID that was passed is " + id);
-              _bucket.get(id, function (err, result) {
-                if (err) {
-                  if (err.code === 13) resolve(false);else reject(err);
-                } else resolve(result);
-              });
+              try {
+                console.log("ID that was passed is " + id);
+                _bucket.get(id, function (err, result) {
+                  if (err) {
+                    if (err.code === 13) resolve(false);else reject(err);
+                  } else resolve(result);
+                });
+              } catch (error) {
+                reject(error);
+              }
             }));
 
           case 1:
@@ -78,13 +83,13 @@ router.get("/login/:id", function () {
           case 5:
             result = _context2.sent;
 
-            console.log(result);
+            console.log("RESULT:", result);
             return _context2.abrupt("return", res.status(200).send(result));
 
           case 10:
             _context2.prev = 10;
             _context2.t0 = _context2["catch"](2);
-            return _context2.abrupt("return", res.status(500).send(_context2.t0));
+            return _context2.abrupt("return", res.status(500).send(_context2.t0.message));
 
           case 13:
           case "end":

@@ -57,7 +57,7 @@ router.get("/audit/user/counts", async (req, res) => {
     try {
       const queryString = N1qlQuery.fromString(
         `
-        SELECT auditedBy, count(auditNeeded) as auditNeededCount FROM fics WHERE type="entry"
+        SELECT auditedBy, count(auditNeeded) as auditNeededCount FROM fics2 WHERE type="entry"
           AND auditNeeded=true
           AND (auditedDateTime IS NULL OR auditedDateTime IS MISSING)
           GROUP BY auditedBy
@@ -73,10 +73,10 @@ router.get("/audit/user/counts", async (req, res) => {
 router.get("/variance", async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*")
   const partsQuery = N1qlQuery.fromString(
-    `SELECT partNumber, description, systemQty, cost FROM fics WHERE type="part"`
+    `SELECT partNumber, description, systemQty, cost FROM fics2 WHERE type="part"`
   )
   const entriesQuery = N1qlQuery.fromString(
-    `SELECT partNumber, sum(qty) as counted FROM fics where type="entry" and void=false GROUP BY partNumber`
+    `SELECT partNumber, sum(qty) as counted FROM fics2 where type="entry" and void=false GROUP BY partNumber`
   )
   const parts = await asyncBucketQuery(partsQuery)
   const entries = await asyncBucketQuery(entriesQuery)
@@ -103,12 +103,12 @@ router.get("/variance", async (req, res) => {
   res.status(200).send({ result: partsWithEntry })
 })
 
-router.get("/delete/:type/:password", async (req, res) => {
+/*router.get("/delete/:type/:password", async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*")
   const { type, password } = req.params
   if (type && password === config.password) {
     const deleteQuery = N1qlQuery.fromString(
-      `DELETE FROM fics WHERE type="${type}"`
+      `DELETE FROM fics2 WHERE type="${type}"`
     )
     try {
       const result = await asyncBucketQuery(deleteQuery)
@@ -119,16 +119,16 @@ router.get("/delete/:type/:password", async (req, res) => {
   } else {
     res.status(400).send("No type or password is incorrect!")
   }
-})
+})*/
 
 router.get("/variance/:limit", async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*")
   const { limit } = req.params
   const partsQuery = N1qlQuery.fromString(
-    `SELECT partNumber, description, systemQty, cost FROM fics WHERE type="part"`
+    `SELECT partNumber, description, systemQty, cost FROM fics2 WHERE type="part"`
   )
   const entriesQuery = N1qlQuery.fromString(
-    `SELECT partNumber, sum(qty) as counted FROM fics where type="entry" and void=false GROUP BY partNumber`
+    `SELECT partNumber, sum(qty) as counted FROM fics2 where type="entry" and void=false GROUP BY partNumber`
   )
   const parts = await asyncBucketQuery(partsQuery)
   const entries = await asyncBucketQuery(entriesQuery)

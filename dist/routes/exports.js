@@ -86,8 +86,8 @@ router.get("/variance", function () {
         switch (_context3.prev = _context3.next) {
           case 0:
             res.setHeader("Access-Control-Allow-Origin", "*");
-            partsQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, description, systemQty, cost FROM fics WHERE type=\"part\"");
-            entriesQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, sum(qty) as counted FROM fics where type=\"entry\" and void=false GROUP BY partNumber");
+            partsQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, description, systemQty, cost FROM fics2 WHERE type=\"part\"");
+            entriesQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, sum(qty) as counted FROM fics2 where type=\"entry\" and void=false GROUP BY partNumber");
             _context3.next = 5;
             return asyncBucketQuery(partsQuery);
 
@@ -167,8 +167,8 @@ router.get("/x3file", function () {
         switch (_context5.prev = _context5.next) {
           case 0:
             res.setHeader("Access-Control-Allow-Origin", "*");
-            partsQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, description, systemQty, cost, sessionId, countList, countListLine, unit FROM fics WHERE type=\"part\" ORDER BY partNumber");
-            entriesQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, sum(qty) as counted FROM fics where type=\"entry\" and void=false GROUP BY partNumber");
+            partsQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, description, systemQty, cost, sessionId, countList, countListLine, unit FROM fics2 WHERE type=\"part\" ORDER BY partNumber");
+            entriesQuery = _couchbase.N1qlQuery.fromString("SELECT partNumber, sum(qty) as counted FROM fics2 where type=\"entry\" and void=false GROUP BY partNumber");
             _context5.next = 5;
             return asyncBucketQuery(partsQuery);
 

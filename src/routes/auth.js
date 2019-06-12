@@ -7,11 +7,13 @@ import config from "../../config.json"
 // Set up couchbase cluster and bucket //
 const cbConfig = config.couchbase
 const cluster = new couchbase.Cluster(cbConfig.cluster)
+  console.log("AUTH: ", cbConfig.username, cbConfig.password)
 cluster.authenticate(cbConfig.username, cbConfig.password)
 const bucket = cluster.openBucket(cbConfig.bucket)
 
 const asyncBucketGet = async (id, _bucket = bucket) =>
   new Promise((resolve, reject) => {
+    try {
     console.log(`ID that was passed is ${id}`)
     _bucket.get(id, (err, result) => {
       if (err) {
@@ -19,7 +21,11 @@ const asyncBucketGet = async (id, _bucket = bucket) =>
         else reject(err)
       } else resolve(result)
     })
+    } catch (error) {
+      reject(error)
+    }
   })
+
 
 const router = Router()
 router.use(bodyParser.json())
@@ -30,10 +36,10 @@ router.get("/login/:id", async (req, res) => {
   const { id } = req.params
   try {
     const result = await asyncBucketGet(id)
-    console.log(result)
+    console.log("RESULT:", result)
     return res.status(200).send(result)
   } catch (error) {
-    return res.status(500).send(error)
+    return res.status(500).send(error.message)
   }
 })
 
