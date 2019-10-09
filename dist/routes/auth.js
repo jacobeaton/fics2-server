@@ -89,9 +89,11 @@ router.get("/login/:id", function () {
           case 10:
             _context2.prev = 10;
             _context2.t0 = _context2["catch"](2);
+
+            console.log("AUTH ERROR: " + _context2.t0);
             return _context2.abrupt("return", res.status(500).send(_context2.t0.message));
 
-          case 13:
+          case 14:
           case "end":
             return _context2.stop();
         }

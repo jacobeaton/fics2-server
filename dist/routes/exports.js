@@ -247,4 +247,57 @@ router.get("/x3file", function () {
     return _ref4.apply(this, arguments);
   };
 }());
+router.get("/entriesFile", function () {
+  var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(req, res) {
+    var entriesQuery, entries, outputData;
+    return regeneratorRuntime.wrap(function _callee6$(_context6) {
+      while (1) {
+        switch (_context6.prev = _context6.next) {
+          case 0:
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            entriesQuery = _couchbase.N1qlQuery.fromString("Select * from fics2 where type=\"entry\"");
+            _context6.next = 4;
+            return asyncBucketQuery(entriesQuery);
+
+          case 4:
+            entries = _context6.sent;
+            outputData = entries.map(function (obj) {
+              // paylaod comes in with fics2 as top level object property
+              // this removes the fics2 property so all we have is the entry itself
+              var entry = obj.fics2;
+              console.log(obj);
+              return {
+                createdAt: entry.createdAt,
+                deviceId: entry.device ? entry.device.deviceId : "",
+                firstName: entry.device ? entry.device.firstName : "",
+                lastName: entry.device ? entry.device.lastName : "",
+                role: entry.device ? entry.device.role : "",
+                deviceType: entry.device ? entry.device.type : "",
+                entryId: entry.entryId,
+                locationId: entry.locationID,
+                partNumber: entry.partNumber,
+                qty: entry.qty,
+                sessionDate: entry.session ? entry.session.sessionDate : "",
+                sessionId: entry.session ? entry.session.sessionId : "",
+                type: entry.type,
+                updatedAt: entry.updatedAt,
+                void: entry.void
+              };
+            });
+
+            res.xls("entriesFile.xlsx", outputData);
+            res.status(200).send();
+
+          case 8:
+          case "end":
+            return _context6.stop();
+        }
+      }
+    }, _callee6, undefined);
+  }));
+
+  return function (_x9, _x10) {
+    return _ref6.apply(this, arguments);
+  };
+}());
 exports.default = router;

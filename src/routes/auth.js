@@ -39,6 +39,7 @@ router.get("/login/:id", async (req, res) => {
     console.log("RESULT:", result)
     return res.status(200).send(result)
   } catch (error) {
+    console.log("AUTH ERROR: " + error)
     return res.status(500).send(error.message)
   }
 })

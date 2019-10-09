@@ -109,4 +109,38 @@ router.get("/x3file", async (req, res) => {
     }
   )
 })
+router.get("/entriesFile", async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*")
+  const entriesQuery = N1qlQuery.fromString(
+    `Select * from fics2 where type="entry"`
+  )
+  const entries = await asyncBucketQuery(entriesQuery)
+
+  const outputData = entries.map(obj => {
+    // paylaod comes in with fics2 as top level object property
+    // this removes the fics2 property so all we have is the entry itself
+    const entry = obj.fics2 
+    console.log(obj)
+    return (
+    {
+      createdAt: entry.createdAt,
+      deviceId: entry.device ? entry.device.deviceId : "",
+      firstName: entry.device ? entry.device.firstName: "",
+      lastName: entry.device ? entry.device.lastName: "",
+      role: entry.device ? entry.device.role: "",
+      deviceType: entry.device ? entry.device.type: "",
+      entryId: entry.entryId,
+      locationId: entry.locationID,
+      partNumber: entry.partNumber,
+      qty: entry.qty,
+      sessionDate: entry.session ? entry.session.sessionDate : "",
+      sessionId: entry.session ? entry.session.sessionId : "",
+      type: entry.type,
+      updatedAt: entry.updatedAt,
+      void: entry.void
+    } 
+  )})
+  res.xls("entriesFile.xlsx", outputData)
+  res.status(200).send()
+})
 export default router
