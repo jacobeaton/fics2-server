@@ -21,7 +21,7 @@
     "couchbase": "^2.4.6",
     "csvtojson": "^2.0.8",
     "express": "^4.16.3",
-    "express-fileupload": "^0.4.0",
+    "express-fileupload": "^1.1.9",
     "json2csv": "^4.2.1",
     "json2xls": "^0.1.2",
     "lodash.flatten": "^4.4.0",
