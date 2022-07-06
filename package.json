@@ -26,7 +26,7 @@
     "json2xls": "^0.1.2",
     "lodash.flatten": "^4.4.0",
     "lodash.flattendeep": "^4.4.0",
-    "moment": "^2.22.2",
+    "moment": "^2.29.4",
     "morgan": "^1.9.1",
     "mssql": "^4.2.1",
     "tedious": "^2.6.4",
